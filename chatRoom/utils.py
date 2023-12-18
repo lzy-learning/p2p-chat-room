@@ -7,6 +7,8 @@ import string
 import socket
 from typing import Union
 import logging
+import socket
+
 
 # 打印所有信息
 # logging.basicConfig(level=logging.INFO)
@@ -79,7 +81,7 @@ def find_available_port(port_lb: int = 8080, port_ub: int = 65535) -> Union[int,
     for port in range(port_lb, port_ub + 1):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             try:
-                s.bind(('127.0.0.1', port))
+                s.bind((get_host_ip(), port))
             except socket.error:
                 continue
             return port
@@ -89,6 +91,17 @@ def find_available_port(port_lb: int = 8080, port_ub: int = 65535) -> Union[int,
 
 def generate_file_name(name: str, ip: str, port: int) -> str:
     return f'{name}_{ip}_{str(port)}.pkl'
+
+
+# 获取本地IP地址
+def get_host_ip():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(('8.8.8.8', 80))
+        ip = s.getsockname()[0]
+    finally:
+        s.close()
+    return ip
 
 
 if __name__ == '__main__':

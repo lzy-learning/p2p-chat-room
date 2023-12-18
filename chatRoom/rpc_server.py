@@ -92,8 +92,8 @@ class PeerServer(peer_pb2_grpc.PeerServicer):
     def SendMessage(self, request, context):
         cur_time = time.time()
         data = Data()
-        print(f'cur peer: {data.local_peer.name}, now: {cur_time:.6f}')
-        print(f'{data.local_peer.name} receive message from {request.chat_name}')
+        # print(f'cur peer: {data.local_peer.name}, now: {cur_time:.6f}')
+        # print(f'{data.local_peer.name} receive message from {request.chat_name}')
         flag = data.add_message_unit(
             request.chat_name,
             request.message_unit.timestamp,

@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QHBoxLayout, QTe
 from PyQt5.QtWidgets import QPlainTextEdit, QCheckBox
 from PyQt5.QtCore import pyqtSignal, QTimer
 from controller import *
-from utils import if_ip_valid, if_port_valid, find_available_port, generate_content
+from utils import get_host_ip, if_ip_valid, if_port_valid, find_available_port, generate_content
 
 
 class LoginDialog(QDialog):
@@ -17,7 +17,7 @@ class LoginDialog(QDialog):
 
         self.ip_label = QLabel("IP:")
         self.ip_line = QLineEdit()
-        self.ip_line.setText("127.0.0.1")  # 默认 IP
+        self.ip_line.setText(get_host_ip())  # 默认 IP
 
         self.port_label = QLabel("Port:")
         self.port_line = QLineEdit()
@@ -203,7 +203,7 @@ class ConnectDialog(QDialog):
 
         self.ip_label = QLabel("IP:")
         self.ip_line = QLineEdit()
-        self.ip_line.setText('127.0.0.1')
+        self.ip_line.setText(get_host_ip())
 
         self.port_label = QLabel("Port:")
         self.port_line = QLineEdit()
@@ -270,6 +270,10 @@ class ChatApp(QWidget):
 
         self.message_display.setReadOnly(True)
 
+        # 消息条数展示
+        self.message_count_label = QLabel('', self)
+
+        # 消息输入
         self.message_input = QPlainTextEdit()
         self.message_input.setPlaceholderText("Type your message and press Enter")
         self.message_input.setFixedHeight(80)  # Set the height to 80 pixels
@@ -333,6 +337,7 @@ class ChatApp(QWidget):
         message_input_send_layout.addLayout(message_send_layout)
 
         right_layout.addLayout(message_display_layout)
+        right_layout.addWidget(self.message_count_label)
         right_layout.addLayout(message_input_send_layout)
 
         main_layout = QHBoxLayout(self)
@@ -356,6 +361,10 @@ class ChatApp(QWidget):
             self.friend_list = updated_friends_list
             self.friends_list_widget.clear()
             self.friends_list_widget.addItems(self.friend_list)
+            if self.current_friend is not None and self.current_friend not in [self.friends_list_widget.item(i).text()
+                                                                               for i in
+                                                                               range(self.friends_list_widget.count())]:
+                self.message_display.setPlainText('')
 
     def scrollbar_value_changed(self):
         self.scroll_position = self.message_display.verticalScrollBar().value()
@@ -385,6 +394,12 @@ class ChatApp(QWidget):
                 self.message_display.setTextCursor(cursor)
 
         self.message_display.verticalScrollBar().valueChanged.connect(self.scrollbar_value_changed)
+
+        if self.friends_list_widget.currentItem() is None:
+            self.message_count_label.setText('')
+        else:
+            self.message_count_label.setText(
+                f'Message count: {get_message_count(self.friends_list_widget.currentItem().text())}')
 
     def on_friend_selected(self):
         # 获取当前选中的好友
@@ -515,6 +530,7 @@ class ChatApp(QWidget):
 
 if __name__ == '__main__':
     from local_data import Data
+
     app = QApplication(sys.argv)
     chat_app = ChatApp()
     app.aboutToQuit.connect(ChatApp.clean_grpc_server)

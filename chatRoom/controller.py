@@ -210,6 +210,19 @@ def get_chat_list():
     return chat_list
 
 
+# 获取消息条数
+def get_message_count(chat_name: Union[str, None]) -> int:
+    if chat_name is not None:
+        data = Data()
+        chat = data.private_chat_dict.get(chat_name)
+        if chat is None:
+            chat = data.group_chat_dict.get(chat_name)
+        if chat is None:
+            return -1
+        return len(chat.message_unit_list)
+    return -1
+
+
 # 获取聊天对应的聊天记录
 def get_chat_info(chat_name: str, k: int = -1) -> Union[List[MessageUnit], None]:
     data = Data()
@@ -363,8 +376,8 @@ def send_message(chat_name: str, message_content: str) -> bool:
                     had_received_list=None
                 )
             )
-            print(f'now: {cur_time:.6f}')
-            print(f'{data.local_peer.name} sends message to {peer.name}({peer.ip}:{peer.port}):')
+            # print(f'now: {cur_time:.6f}')
+            # print(f'{data.local_peer.name} sends message to {peer.name}({peer.ip}:{peer.port}):')
         except grpc.RpcError as e:
             logging.exception('=======================in send_message(SendMessage): %s', e)
 
@@ -391,8 +404,8 @@ def send_message(chat_name: str, message_content: str) -> bool:
                 send_message_request.message_unit.content = message_unit.content
                 send_message_request.had_received_list.extend(sending_list)
                 cur_time = time.time()
-                print(f'cur peer: {data.local_peer.name}, now: {cur_time:.6f}')
-                print(f'{data.local_peer.name} sends message to {peer.name}({peer.ip}:{peer.port}):')
+                # print(f'cur peer: {data.local_peer.name}, now: {cur_time:.6f}')
+                # print(f'{data.local_peer.name} sends message to {peer.name}({peer.ip}:{peer.port}):')
                 response = stub.SendMessage(
                     send_message_request
                 )
