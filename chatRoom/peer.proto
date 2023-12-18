@@ -1,0 +1,116 @@
+// python3 -m grpc_tools.protoc -I. --python_out=. --grpc_python_out=. peer.proto
+syntax = "proto3";
+
+package peer;
+
+service Peer{
+    // 获取对等节点列表
+    rpc GetPeers (GetPeersRequest) returns (GetPeersResponse) {}
+    // 根据时间戳同步某则消息
+    rpc SyncChat (SyncChatRequest) returns (SyncChatResponse) {}
+    // 发送自己的上线消息
+    rpc SendOnlineStatus (SendOnlineStatusRequest) returns (SendOnlineStatusResponse) {}
+
+    // 创建群聊
+    rpc CreateGroup (CreateGroupRequest) returns (CreateGroupResponse) {}
+    // 加入群聊
+    rpc JoinGroup (JoinGroupRequest) returns (JoinGroupResponse) {}
+    // 退出群聊
+    rpc QuitGroup (QuitGroupRequest) returns (QuitGroupResponse) {}
+
+    // 发送消息
+    rpc SendMessage (SendMessageRequest) returns (SendMessageResponse) {}
+
+    // 节点退出
+    rpc Quit (QuitRequest) returns (QuitResponse){}
+}
+
+message PeerNode{
+    string name = 1;
+    string ip = 2;
+    uint32 port = 3;
+    bool online = 4;
+}
+message MessageUnit{
+    string timestamp = 1;
+    string sender = 2;
+    string content = 3;
+}
+message GroupChat{
+    string chat_name = 1;
+    repeated string participants = 2;
+    repeated MessageUnit message_unit_list =3;
+}
+message GetPeersRequest{
+    string name = 1;
+    string ip = 2;
+    uint32 port = 3;
+}
+message GetPeersResponse{
+    repeated PeerNode peer_list = 1;
+}
+
+message SyncChatRequest{
+    string chat_name = 1;
+    string timestamp = 2;
+}
+
+message SyncChatResponse{
+    int32 code = 1;     // 1表示返回成功
+    repeated MessageUnit message_unit_list = 2;
+}
+
+message SendOnlineStatusRequest{
+    string name = 1;
+    string ip = 2;
+    uint32 port = 3;
+    bool online = 4;
+}
+
+message SendOnlineStatusResponse{
+    int32 code = 1;     // 0表示第一次加入，1表示正常下线后的上线，2表示异常下线后的上线
+}
+
+message CreateGroupRequest{
+    string chat_name = 1;
+    repeated string participants = 2;
+}
+message CreateGroupResponse{
+    int32 code = 1;     // 1表示返回成功
+}
+
+message JoinGroupRequest{
+    string chat_name = 1;
+    string name = 2;
+    string ip = 3;
+    uint32 port = 4;
+    bool need_group_chat_data = 5;
+}
+message JoinGroupResponse{
+    int32 code = 1;     // 1表示成功，2表示本地没找到群聊
+    GroupChat group_chat_data = 2;       // 返回群聊的所有信息，仅当对方需要时返回
+}
+
+message QuitGroupRequest{
+    string chat_name = 1;
+    string name = 2;
+}
+message QuitGroupResponse{
+    int32 code = 1;     // 1表示成功
+}
+
+message SendMessageRequest{
+    string chat_name = 1;        // 该消息所属的聊天
+    MessageUnit message_unit = 2;
+    repeated string had_received_list = 3;   // 代表这则消息已经被哪些节点接受了，用于流言协议
+}
+message SendMessageResponse{
+    uint32 code = 1;        // 1代表成功，失败的原因可能是重复消息
+}
+
+message QuitRequest{
+    string name = 1;
+}
+message QuitResponse{
+    uint32 code = 1;        // 1代表接受成功
+}
