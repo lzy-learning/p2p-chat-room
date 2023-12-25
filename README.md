@@ -32,9 +32,9 @@ python3 main.py
 
 #### display
 
-![](.\assets\connect.png)
+![](./assets/connect.png)
 
-![view](.\assets\view.png)
+![view](./assets/view.png)
 
-![private_chat](.\assets\private_chat.png)
+![private_chat](./assets/private_chat.png)
 
